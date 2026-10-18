@@ -1,0 +1,26 @@
+name: Intake Scout
+
+on:
+  repository_dispatch:
+    types: [intake-scout]
+  workflow_dispatch:
+    inputs:
+      issue_key:
+        description: AN or PIC issue key
+        required: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run Intake Scout
+        env:
+          JIRA_BASE: ${{ vars.JIRA_BASE || 'https://abcfinancial.atlassian.net' }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: python automation/handler.py "${{ github.event.client_payload.issue_key || inputs.issue_key }}"
